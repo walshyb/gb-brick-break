@@ -18,6 +18,10 @@ rgblink -o brickbreak.gb main.o
 # Add header info to ROM
 # "Fixes" the header
 rgbfix -v -p 0xFF brickbreak.gb
+
+# Create symbols file so debugger
+# can use label names
+# rgblink -n brickbreak.sym main.o
 ```
 
 ## Todo:
