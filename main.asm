@@ -19,10 +19,10 @@ WaitVBlank:
   ld a, 0
   ld [rLCDC], a
 
-  ; Copy the tile data
-  ld de, Tiles
-  ld hl, $9000
-  ld bc, TilesEnd - Tiles
+; Copy the tile data
+ld de, Tiles
+ld hl, $9000
+ld bc, TilesEnd - Tiles
 CopyTiles:
   ld a, [de]
   ld [hli], a
@@ -32,10 +32,10 @@ CopyTiles:
   or a, c
   jp nz, CopyTiles
 
-  ; Copy the tilemap
-  ld de, Tilemap
-  ld hl, $9800
-  ld bc, TilemapEnd - Tilemap
+; Copy the tilemap
+ld de, Tilemap
+ld hl, $9800
+ld bc, TilemapEnd - Tilemap
 CopyTilemap:
   ld a, [de]
   ld [hli], a
@@ -45,14 +45,15 @@ CopyTilemap:
   or a, c
   jp nz, CopyTilemap
 
-  ld a, 0
-  ld b, 160
-  ld hl, _OAMRAM
+; Prep loading of the Paddle object
+ld a, 0
+ld b, 160
+ld hl, _OAMRAM
 
-  ; Copy the tile data
-  ld de, Paddle
-  ld hl, $8000
-  ld bc, PaddleEnd - Paddle
+; Copy the paddle tile data
+ld de, Paddle
+ld hl, $8000
+ld bc, PaddleEnd - Paddle
 CopyPaddle:
   ld a, [de]
   ld [hli], a
@@ -62,19 +63,22 @@ CopyPaddle:
   or a, c
   jp nz, CopyPaddle
 
+; Clear Object Attribute Memory
+; because OAM is filled with junk on init
 ClearOam:
   ld [hli], a
   dec b
   jp nz, ClearOam
 
-  ld hl, _OAMRAM
-  ld a, 128 + 16
-  ld [hli], a
-  ld a, 16 + 8
-  ld [hli], a
-  ld a, 0
-  ld [hli], a
-  ld [hl], a
+; Draw paddle object by writing its properties
+ld hl, _OAMRAM
+ld a, 128 + 16
+ld [hli], a
+ld a, 16 + 8
+ld [hli], a
+ld a, 0
+ld [hli], a
+ld [hl], a
 
 ; Turn the LCD on,
 ; Enabling, LCD, BG Pallet, and Objects
@@ -89,8 +93,11 @@ ld [rBGP], a
 ld a, %11100100
 ld [rOBP0], a
 
+; Initialize frame counter to 0
+ld a, 0
+ld [wFrameCounter], a
+
 Main:
-  ; Wait until it's *not* VBlank
   ld a, [rLY]
   cp 144
   jp nc, Main
@@ -99,11 +106,21 @@ WaitVBlank2:
   cp 144
   jp c, WaitVBlank2
 
+  ld a, [wFrameCounter]
+  inc a
+  ld [wFrameCounter], a
+  cp a, 15 ; Every 15 frames (a quarter of a second), run the following code
+  jp nz, Main
+
+  ; Reset the frame counter back to 0
+  ld a, 0
+  ld [wFrameCounter], a
+
   ; Move the paddle one pixel to the right.
   ld a, [_OAMRAM + 1]
   inc a
   ld [_OAMRAM + 1], a
-  jp Main
+ jp Main
 
 Done:
   jp Done
@@ -354,3 +371,6 @@ Paddle:
     dw `00000000
     dw `00000000
 PaddleEnd:
+
+SECTION "Counter", WRAM0
+wFrameCounter: db
