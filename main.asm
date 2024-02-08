@@ -24,6 +24,7 @@ WaitVBlank:
   ld a, 0
   ld [rLCDC], a
 
+
 ; Copy the tile data
 ld de, Tiles
 ld hl, $9000
@@ -47,9 +48,14 @@ ld hl, $8000
 ld bc, PaddleEnd - Paddle
 call Memcopy
 
+ld de, Paddle
+ld hl, $8010
+ld bc, PaddleEnd - Paddle
+call Memcopy
+
 ; Copy the ball tile
 ld de, Ball
-ld hl, $8010
+ld hl, $8020
 ld bc, BallEnd - Ball
 call Memcopy
 
@@ -72,12 +78,12 @@ ld [wBallMomentumY], a
 ; Initialize the paddle sprite in OAM
 ld hl, _OAMRAM
 ld a, 128 + 16
-ld [hli], a
+ld [hl], a
 ld a, 16 + 8
 ld [hli], a
 ld a, 0
-ld [hli], a
-ld [hli], a
+ld [hl], a
+ld [hl], a
 ; Now initialize the ball sprite
 ld a, 100 + 16
 ld [hli], a
@@ -100,6 +106,14 @@ ld hl, _OAMRAM
 ld a, 128 + 16 ; Changes Y position
 ld [hli], a
 ld a, 16 + 8 ; Changes X position
+ld [hli], a
+ld a, 0
+ld [hli], a
+ld [hl], a
+
+ld a, 128 + 16 ; Changes Y position
+ld [hli], a
+ld a, 16 + 8 + 64; Changes X position
 ld [hli], a
 ld a, 0
 ld [hli], a
