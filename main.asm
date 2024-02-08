@@ -127,134 +127,146 @@ WaitVBlank2:
   cp 144
   jp c, WaitVBlank2
 
-	; Add the ball's momentum to its position in OAM.
-	ld a, [wBallMomentumX]
-	ld b, a
-	ld a, [_OAMRAM + 5]
-	add a, b
-	ld [_OAMRAM + 5], a
+  ; Only update graphics every 15 frames
+  ld a, [wFrameCounter]
+  inc a
+  ld [wFrameCounter], a
+  cp a, 7 ; Every 15 frames (a quarter of a second), run the following code
+  jp nz, Main
+  
+  ; Reset the frame counter back to 0
+  ld a, 0
+  ld [wFrameCounter], a
 
-	ld a, [wBallMomentumY]
-	ld b, a
-	ld a, [_OAMRAM + 4]
-	add a, b
-	ld [_OAMRAM + 4], a
+  ; Add the ball's momentum to its position in OAM.
+  ld a, [wBallMomentumX]
+  ld b, a
+  ld a, [_OAMRAM + 5]
+  add a, b
+  ld [_OAMRAM + 5], a
+
+  ld a, [wBallMomentumY]
+  ld b, a
+  ld a, [_OAMRAM + 4]
+  add a, b
+  ld [_OAMRAM + 4], a
 
 BounceOnTop:
-	; Remember to offset the OAM position!
-	; (8, 16) in OAM coordinates is (0, 0) on the screen.
-	ld a, [_OAMRAM + 4]
-	sub a, 16 + 1
-	ld c, a
-	ld a, [_OAMRAM + 5]
-	sub a, 8
-	ld b, a
-	call GetTileByPixel ; Returns tile address in hl
-	ld a, [hl]
-	call IsWallTile
-	jp nz, BounceOnRight
-	ld a, 1
-	ld [wBallMomentumY], a
+  ; Remember to offset the OAM position!
+  ; (8, 16) in OAM coordinates is (0, 0) on the screen.
+  ld a, [_OAMRAM + 4]
+  sub a, 16 + 1
+  ld c, a
+  ld a, [_OAMRAM + 5]
+  sub a, 8
+  ld b, a
+  call GetTileByPixel ; Returns tile address in hl
+  ld a, [hl]
+  call IsWallTile
+  jp nz, BounceOnRight
+  ld a, 1
+  ld [wBallMomentumY], a
 
 BounceOnRight:
-	ld a, [_OAMRAM + 4]
-	sub a, 16
-	ld c, a
-	ld a, [_OAMRAM + 5]
-	sub a, 8 - 1
-	ld b, a
-	call GetTileByPixel
-	ld a, [hl]
-	call IsWallTile
-	jp nz, BounceOnLeft
-	ld a, -1
-	ld [wBallMomentumX], a
+  ld a, [_OAMRAM + 4]
+  sub a, 16
+  ld c, a
+  ld a, [_OAMRAM + 5]
+  sub a, 8 - 1
+  ld b, a
+  call GetTileByPixel
+  ld a, [hl]
+  call IsWallTile
+  jp nz, BounceOnLeft
+  ld a, -1
+  ld [wBallMomentumX], a
 
 BounceOnLeft:
-	ld a, [_OAMRAM + 4]
-	sub a, 16
-	ld c, a
-	ld a, [_OAMRAM + 5]
-	sub a, 8 + 1
-	ld b, a
-	call GetTileByPixel
-	ld a, [hl]
-	call IsWallTile
-	jp nz, BounceOnBottom
-	ld a, 1
-	ld [wBallMomentumX], a
+  ld a, [_OAMRAM + 4]
+  sub a, 16
+  ld c, a
+  ld a, [_OAMRAM + 5]
+  sub a, 8 + 1
+  ld b, a
+  call GetTileByPixel
+  ld a, [hl]
+  call IsWallTile
+  jp nz, BounceOnBottom
+  ld a, 1
+  ld [wBallMomentumX], a
 
 BounceOnBottom:
-	ld a, [_OAMRAM + 4]
-	sub a, 16 - 1
-	ld c, a
-	ld a, [_OAMRAM + 5]
-	sub a, 8
-	ld b, a
-	call GetTileByPixel
-	ld a, [hl]
-	call IsWallTile
-	jp nz, BounceDone
-	ld a, -1
-	ld [wBallMomentumY], a
+  ld a, [_OAMRAM + 4]
+  sub a, 16 - 1
+  ld c, a
+  ld a, [_OAMRAM + 5]
+  sub a, 8
+  ld b, a
+  call GetTileByPixel
+  ld a, [hl]
+  call IsWallTile
+  jp nz, BounceDone
+  ld a, -1
+  ld [wBallMomentumY], a
 BounceDone:
 
 PaddleBounce:
-	; First, check if the ball is low enough to bounce off the paddle.
-	ld a, [_OAMRAM]
-	ld b, a
-	ld a, [_OAMRAM + 4]
-	cp a, b
-	jp nz, PaddleBounceDone ; If the ball isn't at the same Y position as the paddle, it can't bounce.
-	; Now let's compare the X positions of the objects to see if they're touching.
-	ld a, [_OAMRAM + 5] ; Ball's X position.
-	ld b, a
-	ld a, [_OAMRAM + 1] ; Paddle's X position.
-	sub a, 8
-	cp a, b
-	jp nc, PaddleBounceDone
-	add a, 8 + 16 ; 8 to undo, 16 as the width.
-	cp a, b
-	jp c, PaddleBounceDone
+  ; First, check if the ball is low enough to bounce off the paddle.
+  ld a, [_OAMRAM]
+  ld b, a
+  ld a, [_OAMRAM + 4]
+  add a, 6
+  cp a, b
+  jp nz, PaddleBounceDone ; If the ball isn't at the same Y position as the paddle, it can't bounce.
+  ; Now let's compare the X positions of the objects to see if they're touching.
+  ld a, [_OAMRAM + 5] ; Ball's X position.
+  ld b, a
+  ld a, [_OAMRAM + 1] ; Paddle's X position.
+  sub a, 8
+  cp a, b
+  jp nc, PaddleBounceDone
+  add a, 8 + 16 ; 8 to undo, 16 as the width.
+  cp a, b
+  jp c, PaddleBounceDone
 
-	ld a, -1
-	ld [wBallMomentumY], a
+  ld a, -1
+  ld [wBallMomentumY], a
 
 PaddleBounceDone:
 
-	; Check the current keys every frame and move left or right
-	call UpdateKeys
+  ; Check the current keys every frame and move left or right
+  call UpdateKeys
 
-	; First, check if left button pressed
+  ; First, check if left button pressed
 CheckLeft:
-	ld a, [wCurKeys]
-	and a, PADF_LEFT
-	jp z, CheckRight
+  ld a, [wCurKeys]
+  and a, PADF_LEFT
+  jp z, CheckRight
 Left:
-	; Move paddle left one pixel
-	ld a, [_OAMRAM + 1]
-	dec a
-	; If we hit edge of playfield, don't move
-	cp a, 15
-	jp z, Main
-	ld [_OAMRAM + 1], a
-	jp Main
+  ; Move paddle left one pixel
+  ld a, [_OAMRAM + 1]
+  dec a
+  ; If we hit edge of playfield, don't move
+  cp a, 15
+  jp z, Main
+  ld [_OAMRAM + 1], a
+  jp Main
 
-	;Then check right
+  ;Then check right
 CheckRight:
-	ld a, [wCurKeys]
-	and a, PADF_RIGHT
-	jp z, Main
+  ld a, [wCurKeys]
+  and a, PADF_RIGHT
+  jp z, Main
 Right:
-	; Move paddle right one pixel
-	ld a, [_OAMRAM + 1]
-	inc a
-	; If we hit edge of playfield, don't move
-	cp a, 105 
-	jp z, Main
-	ld [_OAMRAM + 1], a
-	jp Main
-	
+  ; Move paddle right one pixel
+  ld a, [_OAMRAM + 1]
+  inc a
+  ; If we hit edge of playfield, don't move
+  cp a, 105 
+  jp z, Main
+  ld [_OAMRAM + 1], a
+  jp Main
+  
 Done:
   jp Done
 
@@ -301,63 +313,63 @@ UpdateKeys:
 ; @param c: Y
 ; @return hl: tile address
 GetTileByPixel:
-	; First, we need to divide by 8 to convert a pixel position to a tile position.
-	; After this we want to multiply the Y position by 32.
-	; These operations effectively cancel out so we only need to mask the Y value.
-	ld a, c
-	and a, %11111000
-	ld l, a
-	ld h, 0
-	; Now we have the position * 8 in hl
-	add hl, hl ; position * 16
-	add hl, hl ; position * 32
-	; Convert the X position to an offset.
-	ld a, b
-	srl a ; a / 2
-	srl a ; a / 4
-	srl a ; a / 8
-	; Add the two offsets together.
-	add a, l
-	ld l, a
-	adc a, h
-	sub a, l
-	ld h, a
-	; Add the offset to the tilemap's base address, and we are done!
-	ld bc, $9800
-	add hl, bc
-	ret
+  ; First, we need to divide by 8 to convert a pixel position to a tile position.
+  ; After this we want to multiply the Y position by 32.
+  ; These operations effectively cancel out so we only need to mask the Y value.
+  ld a, c
+  and a, %11111000
+  ld l, a
+  ld h, 0
+  ; Now we have the position * 8 in hl
+  add hl, hl ; position * 16
+  add hl, hl ; position * 32
+  ; Convert the X position to an offset.
+  ld a, b
+  srl a ; a / 2
+  srl a ; a / 4
+  srl a ; a / 8
+  ; Add the two offsets together.
+  add a, l
+  ld l, a
+  adc a, h
+  sub a, l
+  ld h, a
+  ; Add the offset to the tilemap's base address, and we are done!
+  ld bc, $9800
+  add hl, bc
+  ret
 
 ; @param a: tile ID
 ; @return z: set if a is a wall.
 IsWallTile:
-	cp a, $00
-	ret z
-	cp a, $01
-	ret z
-	cp a, $02
-	ret z
-	cp a, $04
-	ret z
-	cp a, $05
-	ret z
-	cp a, $06
-	ret z
-	cp a, $07
-	ret
+  cp a, $00
+  ret z
+  cp a, $01
+  ret z
+  cp a, $02
+  ret z
+  cp a, $04
+  ret z
+  cp a, $05
+  ret z
+  cp a, $06
+  ret z
+  cp a, $07
+  ret
 
 ; Copy bytes from one area to another.
 ; @param de: Source
 ; @param hl: Destination
 ; @param bc: Length
 Memcopy:
-	ld a, [de]
-	ld [hli], a
-	inc de
-	dec bc
-	ld a, b
-	or a, c
-	jp nz, Memcopy
-	ret
+  ld a, [de]
+  ld [hli], a
+  inc de
+  dec bc
+  ld a, b
+  or a, c
+  jp nz, Memcopy
+  ret
 
 Tiles:
   dw `33333333
