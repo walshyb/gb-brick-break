@@ -6,9 +6,10 @@ compile() {
 	# Compile the paddle
 	rgbasm -o ./objects/paddle.o ./objects/paddle.asm
 	rgbasm -o ./objects/ball.o ./objects/ball.asm
+	rgbasm -o input.o input.asm
 
 	# Link all the objects and output a .gb file
-	rgblink -m brickbreak.map -n brickbreak.sym -o brickbreak.gb main.o ./objects/*.o
+	rgblink -m brickbreak.map -n brickbreak.sym -o brickbreak.gb ./*.o ./*/**.o
 
 	# Fix the header (adds checksum, logo, and ROM size) of the .gb file
 	rgbfix -v -p 0xFF brickbreak.gb
