@@ -42,6 +42,31 @@ ld hl, $8000
 ld bc, PaddleEnd - Paddle
 call Memcopy
 
+; Copy the ball tile
+ld de, Ball
+ld hl, $8010
+ld bc, BallEnd - Ball
+call Memcopy
+
+    ; Initialize the paddle sprite in OAM
+    ld hl, _OAMRAM
+    ld a, 128 + 16
+    ld [hli], a
+    ld a, 16 + 8
+    ld [hli], a
+    ld a, 0
+    ld [hli], a
+    ld [hli], a
+    ; Now initialize the ball sprite
+    ld a, 100 + 16
+    ld [hli], a
+    ld a, 32 + 8
+    ld [hli], a
+    ld a, 1
+    ld [hli], a
+    ld a, 0
+    ld [hli], a
+
 ; Clear Object Attribute Memory
 ; because OAM is filled with junk on init
 ClearOam:
@@ -419,6 +444,17 @@ Paddle:
     dw `00000000
     dw `00000000
 PaddleEnd:
+
+Ball:
+    dw `00033000
+    dw `00322300
+    dw `03222230
+    dw `03222230
+    dw `00322300
+    dw `00033000
+    dw `00000000
+    dw `00000000
+BallEnd:
 
 SECTION "Counter", WRAM0
 wFrameCounter: db
