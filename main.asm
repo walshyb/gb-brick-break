@@ -1,5 +1,10 @@
 include "hardware.inc"
 
+; Constants
+DEF BRICK_LEFT EQU $05
+DEF BRICK_RIGHT EQU $06
+DEF BLANK_TILE EQU $08
+
 ; Make space for the ROM header
 ; Header info needs to be at address $100
 ; Appropriate info added by rgbfix  
