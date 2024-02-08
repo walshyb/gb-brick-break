@@ -97,9 +97,9 @@ ClearOam:
 
 ; Draw paddle object by writing its properties
 ld hl, _OAMRAM
-ld a, 128 + 16
+ld a, 128 + 16 ; Changes Y position
 ld [hli], a
-ld a, 16 + 8
+ld a, 16 + 8 ; Changes X position
 ld [hli], a
 ld a, 0
 ld [hli], a
