@@ -61,8 +61,8 @@ rgblink -n brickbreak.sym main.o
 
 ## Todo:
 
-[x] Setup auto compile and rebuild on save
-[ ] Add score
-[ ] Add start screen
-[ ] Add more levels
-[ ] Elongate paddle
+- [x] Setup auto compile and rebuild on save
+- [ ] Add score
+- [ ] Add start screen
+- [ ] Add more levels
+- [ ] Elongate paddle
