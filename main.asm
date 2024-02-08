@@ -75,9 +75,9 @@ ld [hli], a
 
 ; The ball starts out going up and to the right
 ld a, 1
-ld [wBallMomentumX], a
+call UpdateBallMomentumX
 ld a, -1
-ld [wBallMomentumY], a
+call UpdateBallMomentumY
 
 ; Clear Object Attribute Memory
 ; because OAM is filled with junk on init
@@ -127,7 +127,7 @@ WaitVBlank2:
   ld a, [wFrameCounter]
   inc a
   ld [wFrameCounter], a
-  cp a, 7 ; Every 15 frames (a quarter of a second), run the following code
+  cp a, 15 ; Every 15 frames (a quarter of a second), run the following code
   jp nz, Main
   
   ; Reset the frame counter back to 0
@@ -135,13 +135,13 @@ WaitVBlank2:
   ld [wFrameCounter], a
 
   ; Add the ball's momentum to its position in OAM.
-  ld a, [wBallMomentumX]
+	call GetBallMomentumX
   ld b, a
   ld a, [_OAMRAM + 5]
   add a, b
   ld [_OAMRAM + 5], a
 
-  ld a, [wBallMomentumY]
+	call GetBallMomentumY
   ld b, a
   ld a, [_OAMRAM + 4]
   add a, b
@@ -162,7 +162,7 @@ BounceOnTop:
   jp nz, BounceOnRight
   call CheckAndHandleBrick
   ld a, 1
-  ld [wBallMomentumY], a
+	call UpdateBallMomentumY
 
 BounceOnRight:
   ld a, [_OAMRAM + 4]
@@ -177,7 +177,7 @@ BounceOnRight:
   jp nz, BounceOnLeft
   call CheckAndHandleBrick
   ld a, -1
-  ld [wBallMomentumX], a
+	call UpdateBallMomentumX
 
 BounceOnLeft:
   ld a, [_OAMRAM + 4]
@@ -192,7 +192,7 @@ BounceOnLeft:
   jp nz, BounceOnBottom
   call CheckAndHandleBrick
   ld a, 1
-  ld [wBallMomentumX], a
+	call UpdateBallMomentumX
 
 BounceOnBottom:
   ld a, [_OAMRAM + 4]
@@ -207,32 +207,10 @@ BounceOnBottom:
   jp nz, BounceDone
   call CheckAndHandleBrick
   ld a, -1
-  ld [wBallMomentumY], a
+	call UpdateBallMomentumY
 BounceDone:
 
-PaddleBounce:
-  ; First, check if the ball is low enough to bounce off the paddle.
-  ld a, [_OAMRAM]
-  ld b, a
-  ld a, [_OAMRAM + 4]
-  add a, 6
-  cp a, b
-  jp nz, PaddleBounceDone ; If the ball isn't at the same Y position as the paddle, it can't bounce.
-  ; Now let's compare the X positions of the objects to see if they're touching.
-  ld a, [_OAMRAM + 5] ; Ball's X position.
-  ld b, a
-  ld a, [_OAMRAM + 1] ; Paddle's X position.
-  sub a, 8
-  cp a, b
-  jp nc, PaddleBounceDone
-  add a, 8 + 16 ; 8 to undo, 16 as the width.
-  cp a, b
-  jp c, PaddleBounceDone
-
-  ld a, -1
-  ld [wBallMomentumY], a
-
-PaddleBounceDone:
+	call HandlePaddleBounce
 
   ; Check the current keys every frame and move left or right
   call UpdateKeys
@@ -654,8 +632,3 @@ wFrameCounter: db
 SECTION "Input Variables", WRAM0
 wCurKeys: db
 wNewKeys: db
-
-SECTION "Ball Data", WRAM0
-wBallMomentumX: db
-wBallMomentumY: db
-

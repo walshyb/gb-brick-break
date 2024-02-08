@@ -5,6 +5,7 @@ compile() {
 
 	# Compile the paddle
 	rgbasm -o ./objects/paddle.o ./objects/paddle.asm
+	rgbasm -o ./objects/ball.o ./objects/ball.asm
 
 	# Link all the objects and output a .gb file
 	rgblink -m brickbreak.map -n brickbreak.sym -o brickbreak.gb main.o ./objects/*.o
