@@ -214,6 +214,9 @@ BounceDone:
 
   ; Check the current keys every frame and move left or right
   call UpdateKeys
+
+	; TODO:
+	; See if I can convert this to func call
 	jp CheckKeys
 
   
