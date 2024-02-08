@@ -21,7 +21,7 @@ rgbfix -v -p 0xFF brickbreak.gb
 
 # Create symbols file so debugger
 # can use label names
-# rgblink -n brickbreak.sym main.o
+rgblink -n brickbreak.sym main.o
 ```
 
 ## Todo:
