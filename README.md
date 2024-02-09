@@ -66,3 +66,8 @@ rgblink -n brickbreak.sym main.o
 - [ ] Add start screen
 - [ ] Add more levels
 - [ ] Elongate paddle
+
+## Screenshots
+
+<img width="561" alt="Barebones Level 1. Result from finishing tutorial" src="https://github.com/walshyb/gb-brick-break/assets/6893300/b8225691-3699-4b59-a18c-3c8e9db6475e">
+
